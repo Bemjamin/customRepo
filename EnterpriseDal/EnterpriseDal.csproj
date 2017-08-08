@@ -1,0 +1,13 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp1.1</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="ContextTransaction.cs" />
+    <Compile Remove="Repository.cs" />
+    <Compile Remove="UnitOfWork.cs" />
+  </ItemGroup>
+
+</Project>

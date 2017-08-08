@@ -1,0 +1,7 @@
+C:\Users\Bemjamin\Desktop\EnterpriseDal\EnterpriseDal\bin\Debug\netcoreapp1.1\EnterpriseDal.deps.json
+C:\Users\Bemjamin\Desktop\EnterpriseDal\EnterpriseDal\bin\Debug\netcoreapp1.1\EnterpriseDal.dll
+C:\Users\Bemjamin\Desktop\EnterpriseDal\EnterpriseDal\bin\Debug\netcoreapp1.1\EnterpriseDal.pdb
+C:\Users\Bemjamin\Desktop\EnterpriseDal\EnterpriseDal\obj\Debug\netcoreapp1.1\EnterpriseDal.csprojResolveAssemblyReference.cache
+C:\Users\Bemjamin\Desktop\EnterpriseDal\EnterpriseDal\obj\Debug\netcoreapp1.1\EnterpriseDal.AssemblyInfo.cs
+C:\Users\Bemjamin\Desktop\EnterpriseDal\EnterpriseDal\obj\Debug\netcoreapp1.1\EnterpriseDal.dll
+C:\Users\Bemjamin\Desktop\EnterpriseDal\EnterpriseDal\obj\Debug\netcoreapp1.1\EnterpriseDal.pdb
