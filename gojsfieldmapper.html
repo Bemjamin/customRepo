@@ -14,17 +14,29 @@
       if (window.goSamples) goSamples(); // init for these samples -- you don't need to call this
       var $ = go.GraphObject.make; // for conciseness in defining templates
 
+      function makeButton(text, action, visiblePredicate) {
+      return $("ContextMenuButton",
+               $(go.TextBlock, text),
+               { click: action },
+               // don't bother with binding GraphObject.visible if there's no predicate
+               visiblePredicate ? new go.Binding("visible", "", function(o, e) { return o.diagram ? visiblePredicate(o, e) : false; }).ofObject() : {});
+      }
+
       myDiagram = $(go.Diagram, "myDiagramDiv", {
         initialContentAlignment: go.Spot.Center,
         validCycle: go.Diagram.CycleNotDirected, // don't allow loops
         // For this sample, automatically show the state of the diagram's model on the page
-        ModelChanged: function(e) {},
+        ModelChanged: function(e) {
+
+        },
         "undoManager.isEnabled": true
       });
 
       // This template is a Panel that is used to represent each item in a Panel.itemArray.
       // The Panel is data bound to the item object.
-      var fieldTemplate = $(go.Panel, "TableRow", // this Panel is a row in the containing Table
+      var fieldTemplate = $(
+        go.Panel,
+        "TableRow", // this Panel is a row in the containing Table
         new go.Binding("portId", "name"), // this Panel is a "port"
         {
           background: "transparent", // so this port's background can be picked by the mouse
@@ -60,7 +72,7 @@
             fromLinkable: false,
             toLinkable: false
           },
-          new go.Binding("text", "name")
+          new go.Binding("text", "name").makeTwoWay()
         ),
         $(
           go.TextBlock,
@@ -79,32 +91,26 @@
         // this rectangular shape surrounds the content of the node
         $(go.Shape, { fill: "#EEEEEE" }),
         // the content consists of a header and a list of items
-        $(
-          go.Panel,
+        $(go.Panel,
           "Vertical",
           // this is the header for the whole node
-          $(
-            go.Panel,
+          $(go.Panel,
             "Auto",
             { stretch: go.GraphObject.Horizontal }, // as wide as the whole node
             $(go.Shape, { fill: "#1570A6", stroke: null }),
-            $(
-              go.TextBlock,
-              {
+            $(go.TextBlock, {
                 alignment: go.Spot.Center,
                 editable: true,
                 margin: 3,
                 stroke: "white",
                 textAlign: "center",
                 font: "bold 12pt sans-serif"
-              },
-              new go.Binding("text", "key")
+              }, new go.Binding("text", "key")
             )
           ),
           // this Panel holds a Panel for each item object in the itemArray;
           // each item Panel is defined by the itemTemplate to be a TableRow in this Table
-          $(
-            go.Panel,
+          $(go.Panel,
             "Table",
             {
               name: "TABLE",
@@ -114,8 +120,18 @@
               itemTemplate: fieldTemplate
             },
             new go.Binding("itemArray", "fields")
-          ) // end Table Panel of items
-        ) // end Vertical Panel
+          ),
+          {
+            contextMenu: $("ContextMenu", makeButton("New Field", function(e, obj){
+              var currentDiagram = e.targetDiagram;
+              var currentNode = obj.part.adornedPart;
+              currentDiagram.startTransaction("addnewfield")
+              currentDiagram.model.addArrayItem(currentNode.data.fields, { "name":"field5" })
+              currentDiagram.commitTransaction("addnewfield")
+            }))
+          } // end Table Panel of items
+        ), // end Vertical Panel
+        
       ); // end Node
 
       myDiagram.contextMenu = $(
@@ -123,12 +139,23 @@
         $("ContextMenuButton", $(go.TextBlock, "New DataSet"), {
           click: function(e, obj) {
             e.diagram.commit(function(d) {
-              var data = { key: "New DataSet" };
+              var data = { key: "New DataSet", fields: [] };
               d.model.addNodeData(data);
               part = d.findPartForData(data); // must be same data reference, not a new {}
               // set location to saved mouseDownPoint in ContextMenuTool
               part.location = d.toolManager.contextMenuTool.mouseDownPoint;
             }, "new node");
+          }
+        }),
+        $("ContextMenuButton", $(go.TextBlock, "New Rule"), {
+          click: function(e, obj) {
+            e.diagram.commit(function(d) {
+              var data = { key: "New Rule", fields: [] };
+              d.model.addNodeData(data);
+              part = d.findPartForData(data); // must be same data reference, not a new {}
+              // set location to saved mouseDownPoint in ContextMenuTool
+              part.location = d.toolManager.contextMenuTool.mouseDownPoint;
+            }, "new rule");
           }
         })
       );
