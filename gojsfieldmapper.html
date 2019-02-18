@@ -1,139 +1,225 @@
 <html>
-<head>
-  <!-- use go-debug.js when developing and go.js when deploying -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.0.2/go-debug.js"></script>
-</head> 
-<body onload="init()">
-  <div id="myDiagramDiv"  style="border: solid 1px black; width:100%; height:300px">
-  </div>
-</body>
-<script>
-  
-  function init() {
-      if (window.goSamples) goSamples();  // init for these samples -- you don't need to call this
-      var $ = go.GraphObject.make;  // for conciseness in defining templates
+  <head>
+    <!-- use go-debug.js when developing and go.js when deploying -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gojs/2.0.2/go-debug.js"></script>
+  </head>
+  <body onload="init()">
+    <div
+      id="myDiagramDiv"
+      style="border: solid 1px black; width:100%; height:100%"
+    ></div>
+  </body>
+  <script>
+    function init() {
+      if (window.goSamples) goSamples(); // init for these samples -- you don't need to call this
+      var $ = go.GraphObject.make; // for conciseness in defining templates
 
-      myDiagram =
-        $(go.Diagram, "myDiagramDiv",
-          {
-            initialContentAlignment: go.Spot.Center,
-            validCycle: go.Diagram.CycleNotDirected,  // don't allow loops
-            // For this sample, automatically show the state of the diagram's model on the page
-            "ModelChanged": function(e) {
-              
-            },
-            "undoManager.isEnabled": true
-          });
+      myDiagram = $(go.Diagram, "myDiagramDiv", {
+        initialContentAlignment: go.Spot.Center,
+        validCycle: go.Diagram.CycleNotDirected, // don't allow loops
+        // For this sample, automatically show the state of the diagram's model on the page
+        ModelChanged: function(e) {},
+        "undoManager.isEnabled": true
+      });
 
       // This template is a Panel that is used to represent each item in a Panel.itemArray.
       // The Panel is data bound to the item object.
-      var fieldTemplate =
-        $(go.Panel, "TableRow",  // this Panel is a row in the containing Table
-          new go.Binding("portId", "name"),  // this Panel is a "port"
-          {
-            background: "transparent",  // so this port's background can be picked by the mouse
-            fromSpot: go.Spot.LeftRightSides,  // links only go from the right side to the left side
-            toSpot: go.Spot.LeftRightSides,
-            // allow drawing links from or to this port:
-            fromLinkable: true, toLinkable: true
-          },
-          { // allow the user to select items -- the background color indicates whether "selected"
-            //?? maybe this should be more sophisticated than simple toggling of selection
-            click: function(e, item) {
-              // assume "transparent" means not "selected", for items
-              var oldskips = item.diagram.skipsUndoManager;
-              item.diagram.skipsUndoManager = true;
-              if (item.background === "transparent") {
-                item.background = "dodgerblue";
-              } else {
-                item.background = "transparent";
-              }
-              item.diagram.skipsUndoManager = oldskips;
+      var fieldTemplate = $(go.Panel, "TableRow", // this Panel is a row in the containing Table
+        new go.Binding("portId", "name"), // this Panel is a "port"
+        {
+          background: "transparent", // so this port's background can be picked by the mouse
+          fromSpot: go.Spot.LeftRightSides, // links only go from the right side to the left side
+          toSpot: go.Spot.LeftRightSides,
+          // allow drawing links from or to this port:
+          fromLinkable: true,
+          toLinkable: true
+        },
+        {
+          // allow the user to select items -- the background color indicates whether "selected"
+          //?? maybe this should be more sophisticated than simple toggling of selection
+          click: function(e, item) {
+            // assume "transparent" means not "selected", for items
+            var oldskips = item.diagram.skipsUndoManager;
+            item.diagram.skipsUndoManager = true;
+            if (item.background === "transparent") {
+              item.background = "dodgerblue";
+            } else {
+              item.background = "transparent";
             }
+            item.diagram.skipsUndoManager = oldskips;
+          }
+        },
+        $(
+          go.TextBlock,
+          {
+            margin: new go.Margin(0, 2),
+            column: 1,
+            font: "bold 13px sans-serif",
+            editable: true,
+            // and disallow drawing links from or to this text:
+            fromLinkable: false,
+            toLinkable: false
           },
-          $(go.TextBlock,
-            { margin: new go.Margin(0, 2), column: 1, font: "bold 13px sans-serif",
-              // and disallow drawing links from or to this text:
-              fromLinkable: false, toLinkable: false },
-            new go.Binding("text", "name")),
-          $(go.TextBlock,
-            { margin: new go.Margin(0, 2), column: 2, font: "13px sans-serif" },
-            new go.Binding("text", "info"))
-        );
+          new go.Binding("text", "name")
+        ),
+        $(
+          go.TextBlock,
+          { margin: new go.Margin(0, 2), column: 2, font: "13px sans-serif" },
+          new go.Binding("text", "info")
+        )
+      );
 
       // This template represents a whole "record".
-      myDiagram.nodeTemplate =
-        $(go.Node, "Auto",
-          new go.Binding("location", "loc", go.Point.parse).makeTwoWay(go.Point.stringify),
-          // this rectangular shape surrounds the content of the node
-          $(go.Shape,
-            { fill: "#EEEEEE" }),
-          // the content consists of a header and a list of items
-          $(go.Panel, "Vertical",
-            // this is the header for the whole node
-            $(go.Panel, "Auto",
-              { stretch: go.GraphObject.Horizontal },  // as wide as the whole node
-              $(go.Shape,
-                { fill: "#1570A6", stroke: null }),
-              $(go.TextBlock,
-                {
-                  alignment: go.Spot.Center,
-                  margin: 3,
-                  stroke: "white",
-                  textAlign: "center",
-                  font: "bold 12pt sans-serif"
-                },
-                new go.Binding("text", "key"))),
-            // this Panel holds a Panel for each item object in the itemArray;
-            // each item Panel is defined by the itemTemplate to be a TableRow in this Table
-            $(go.Panel, "Table",
+      myDiagram.nodeTemplate = $(
+        go.Node,
+        "Auto",
+        new go.Binding("location", "loc", go.Point.parse).makeTwoWay(
+          go.Point.stringify
+        ),
+        // this rectangular shape surrounds the content of the node
+        $(go.Shape, { fill: "#EEEEEE" }),
+        // the content consists of a header and a list of items
+        $(
+          go.Panel,
+          "Vertical",
+          // this is the header for the whole node
+          $(
+            go.Panel,
+            "Auto",
+            { stretch: go.GraphObject.Horizontal }, // as wide as the whole node
+            $(go.Shape, { fill: "#1570A6", stroke: null }),
+            $(
+              go.TextBlock,
               {
-                name: "TABLE",
-                padding: 2,
-                minSize: new go.Size(100, 10),
-                defaultStretch: go.GraphObject.Horizontal,
-                itemTemplate: fieldTemplate
+                alignment: go.Spot.Center,
+                editable: true,
+                margin: 3,
+                stroke: "white",
+                textAlign: "center",
+                font: "bold 12pt sans-serif"
               },
-              new go.Binding("itemArray", "fields")
-            )  // end Table Panel of items
-          )  // end Vertical Panel
-        );  // end Node
+              new go.Binding("text", "key")
+            )
+          ),
+          // this Panel holds a Panel for each item object in the itemArray;
+          // each item Panel is defined by the itemTemplate to be a TableRow in this Table
+          $(
+            go.Panel,
+            "Table",
+            {
+              name: "TABLE",
+              padding: 2,
+              minSize: new go.Size(100, 10),
+              defaultStretch: go.GraphObject.Horizontal,
+              itemTemplate: fieldTemplate
+            },
+            new go.Binding("itemArray", "fields")
+          ) // end Table Panel of items
+        ) // end Vertical Panel
+      ); // end Node
 
-      myDiagram.linkTemplate =
-        $(go.Link,
-          { relinkableFrom: true, relinkableTo: true, toShortLength: 4 },  // let user reconnect links
-          $(go.Shape, { strokeWidth: 1.5 }),
-          $(go.Shape, { toArrow: "Standard", stroke: null })
-        );
+      myDiagram.contextMenu = $(
+        "ContextMenu",
+        $("ContextMenuButton", $(go.TextBlock, "New DataSet"), {
+          click: function(e, obj) {
+            e.diagram.commit(function(d) {
+              var data = { key: "New DataSet" };
+              d.model.addNodeData(data);
+              part = d.findPartForData(data); // must be same data reference, not a new {}
+              // set location to saved mouseDownPoint in ContextMenuTool
+              part.location = d.toolManager.contextMenuTool.mouseDownPoint;
+            }, "new node");
+          }
+        })
+      );
 
-      myDiagram.model =
-        $(go.GraphLinksModel,
+      myDiagram.linkTemplate = $(
+        go.Link,
+        { relinkableFrom: true, relinkableTo: true, toShortLength: 4 }, // let user reconnect links
+        $(go.Shape, { strokeWidth: 1.5 }),
+        $(go.Shape, { toArrow: "Standard", stroke: null })
+      );
+
+      myDiagram.model = $(go.GraphLinksModel, {
+        linkFromPortIdProperty: "fromPort",
+        linkToPortIdProperty: "toPort",
+        nodeDataArray: [
           {
-            linkFromPortIdProperty: "fromPort",
-            linkToPortIdProperty: "toPort",
-            nodeDataArray: [
-              { key: "DataModel",
-                fields: [
-                  { name: "field1", info: "", color: "#F7B84B", figure: "Ellipse" },
-                  { name: "field2", info: "the second one", color: "#F25022", figure: "Ellipse" },
-                  { name: "fieldThree", info: "3rd", color: "#00BCF2" }
-                ],
-                loc: "0 0" },
-              { key: "CAT",
-                fields: [
-                  { name: "fieldA", info: "",       color: "#FFB900", figure: "Diamond" },
-                  { name: "fieldB", info: "",       color: "#F25022", figure: "Rectangle" },
-                  { name: "fieldC", info: "",       color: "#7FBA00", figure: "Diamond" },
-                  { name: "fieldD", info: "fourth", color: "#00BCF2",  figure: "Rectangle" }
-                ],
-                loc: "250 0" }
+            key: "DataModel",
+            fields: [
+              { name: "field1", info: "", color: "#F7B84B", figure: "Ellipse" },
+              {
+                name: "field2",
+                info: "the second one",
+                color: "#F25022",
+                figure: "Ellipse"
+              },
+              { name: "fieldThree", info: "3rd", color: "#00BCF2" }
             ],
-            linkDataArray: [
-              { from: "DataModel", fromPort: "field1", to: "CAT", toPort: "fieldA" },
-              { from: "DataModel", fromPort: "field2", to: "CAT", toPort: "fieldD" },
-              { from: "DataModel", fromPort: "fieldThree", to: "CAT", toPort: "fieldB" }
-            ]
-          });
+            loc: "0 0"
+          },
+          {
+            key: "CAT",
+            fields: [
+              { name: "fieldA", info: "", color: "#FFB900", figure: "Diamond" },
+              {
+                name: "fieldB",
+                info: "",
+                color: "#F25022",
+                figure: "Rectangle"
+              },
+              { name: "fieldC", info: "", color: "#7FBA00", figure: "Diamond" },
+              {
+                name: "fieldD",
+                info: "fourth",
+                color: "#00BCF2",
+                figure: "Rectangle"
+              }
+            ],
+            loc: "200 0"
+          },
+          {
+            key: "FIS",
+            fields: [
+              { name: "fieldA", info: "", color: "#FFB900", figure: "Diamond" },
+              {
+                name: "fieldB",
+                info: "",
+                color: "#F25022",
+                figure: "Rectangle"
+              },
+              { name: "fieldC", info: "", color: "#7FBA00", figure: "Diamond" },
+              {
+                name: "fieldD",
+                info: "fourth",
+                color: "#00BCF2",
+                figure: "Rectangle"
+              }
+            ],
+            loc: "0 250"
+          }
+        ],
+        linkDataArray: [
+          {
+            from: "DataModel",
+            fromPort: "field1",
+            to: "CAT",
+            toPort: "fieldA"
+          },
+          {
+            from: "DataModel",
+            fromPort: "field2",
+            to: "CAT",
+            toPort: "fieldD"
+          },
+          {
+            from: "DataModel",
+            fromPort: "fieldThree",
+            to: "CAT",
+            toPort: "fieldB"
+          }
+        ]
+      });
 
       // this is a bit inefficient, but should be OK for normal-sized graphs with reasonable numbers of items per node
       function findAllSelectedItems() {
@@ -156,13 +242,17 @@
       myDiagram.commandHandler.canDeleteSelection = function() {
         // true if there are any selected deletable nodes or links,
         // or if there are any selected items within nodes
-        return go.CommandHandler.prototype.canDeleteSelection.call(myDiagram.commandHandler) ||
-               findAllSelectedItems().length > 0;
+        return (
+          go.CommandHandler.prototype.canDeleteSelection.call(
+            myDiagram.commandHandler
+          ) || findAllSelectedItems().length > 0
+        );
       };
 
       myDiagram.commandHandler.deleteSelection = function() {
         var items = findAllSelectedItems();
-        if (items.length > 0) {  // if there are any selected items, delete them
+        if (items.length > 0) {
+          // if there are any selected items, delete them
           myDiagram.startTransaction("delete items");
           for (var i = 0; i < items.length; i++) {
             var panel = items[i];
@@ -173,8 +263,11 @@
             myDiagram.model.removeArrayItem(itemarray, itemindex);
           }
           myDiagram.commitTransaction("delete items");
-        } else {  // otherwise just delete nodes and/or links, as usual
-          go.CommandHandler.prototype.deleteSelection.call(myDiagram.commandHandler);
+        } else {
+          // otherwise just delete nodes and/or links, as usual
+          go.CommandHandler.prototype.deleteSelection.call(
+            myDiagram.commandHandler
+          );
         }
       };
 
@@ -184,7 +277,5 @@
       //   document.getElementById("mySavedModel").textContent = myDiagram.model.toJson();
       // }
     }
-
-</script>
-
+  </script>
 </html>
